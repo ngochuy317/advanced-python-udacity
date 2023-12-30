@@ -31,22 +31,23 @@ def write_to_csv(results, filename):
     )
     # TODO: Write the results to a CSV file, following the specification in the instructions.
     filename = filename if filename else 'results.csv'
-    output = [fieldnames]
+    output = list()
     for approach in results:
         neo = approach.neo
-        output.append((
-            datetime_to_str(approach.time),
-            approach.distance,
-            approach.velocity,
-            neo.designation,
-            neo.name if neo.name else '',
-            neo.diameter if neo.diameter else 'nan',
-            neo.hazardous
-        ))
-    with open(filename, 'w') as f:
-        writer = csv.writer(f)
-        for elem in output:
-            writer.writerow(elem)
+        output.append({
+            'datetime_utc': datetime_to_str(approach.time),
+            'distance_au': approach.distance,
+            'velocity_km_s': approach.velocity,
+            'designation': neo.designation,
+            'name': neo.name if neo.name else '',
+            'diameter_km': neo.diameter if neo.diameter else 'nan',
+            'potentially_hazardous': neo.hazardous
+        })
+    csvfile = open(filename, 'w')
+    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(output)
+    csvfile.close()
 
 
 def write_to_json(results, filename):

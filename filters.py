@@ -73,6 +73,41 @@ class AttributeFilter:
         return f"{self.__class__.__name__}(op=operator.{self.op.__name__}, value={self.value})"
 
 
+class DateFilter(AttributeFilter):
+
+    @classmethod
+    def get(cls, approach):
+        return approach.time.date()
+
+
+class DistanceFilter(AttributeFilter):
+
+    @classmethod
+    def get(cls, approach):
+        return float(approach.distance)
+
+
+class VeloctiyFilter(AttributeFilter):
+
+    @classmethod
+    def get(cls, approach):
+        return float(approach.velocity)
+
+
+class DiameterFilter(AttributeFilter):
+
+    @classmethod
+    def get(cls, approach):
+        return float(approach.neo.diameter)
+
+
+class HazardousFilter(AttributeFilter):
+
+    @classmethod
+    def get(cls, approach):
+        return approach.neo.hazardous
+
+
 def create_filters(
         date=None, start_date=None, end_date=None,
         distance_min=None, distance_max=None,
@@ -110,29 +145,29 @@ def create_filters(
     :return: A collection of filters for use with `query`.
     """
     # TODO: Decide how you will represent your filters.
-    kwargs = dict()
+    _filter = list()
     if date:
-        kwargs.update({'date': date})
+        _filter.append(DateFilter(operator.eq, date))
     if start_date:
-        kwargs.update({'start_date': start_date})
+        _filter.append(DateFilter(operator.ge, start_date))
     if end_date:
-        kwargs.update({'end_date': end_date})
+        _filter.append(DateFilter(operator.le, end_date))
     if distance_min:
-        kwargs.update({'distance_min': distance_min})
+        _filter.append(DistanceFilter(operator.ge, distance_min))
     if distance_max:
-        kwargs.update({'distance_max': distance_max})
+        _filter.append(DistanceFilter(operator.le, distance_max))
     if velocity_max:
-        kwargs.update({'velocity_max': velocity_max})
+        _filter.append(VeloctiyFilter(operator.le, velocity_max))
     if velocity_min:
-        kwargs.update({'velocity_min': velocity_min})
+        _filter.append(VeloctiyFilter(operator.ge, velocity_min))
     if diameter_min:
-        kwargs.update({'diameter_min': diameter_min})
+        _filter.append(DiameterFilter(operator.ge, diameter_min))
     if diameter_max:
-        kwargs.update({'diameter_max': diameter_max})
+        _filter.append(DiameterFilter(operator.le, diameter_max))
     if not hazardous is None:
-        kwargs.update({'hazardous': hazardous})
+        _filter.append(HazardousFilter(operator.eq, hazardous))
 
-    return kwargs
+    return _filter
 
 
 def limit(iterator, n=None):
